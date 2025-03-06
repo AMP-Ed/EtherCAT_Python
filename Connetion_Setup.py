@@ -1,30 +1,31 @@
-# Find all the availabe adapters and find EtherCAT slave
+# Find all the availabe adapters and EtherCAT slave
+# requires npcap installed https://npcap.com/
 
-# Find your adapter id
 import pysoem
 
-adapters = pysoem.find_adapters()
+# # Find available network adapters
+# adapters = pysoem.find_adapters()
+# for i, adapter in enumerate(adapters):
+#    print('Adapter {}'.format(i))
+#    print('  {}'.format(adapter.name))
+#    print('  {}'.format(adapter.desc))
 
-for i, adapter in enumerate(adapters):
-   print('Adapter {}'.format(i))
-   print('  {}'.format(adapter.name))
-   print('  {}'.format(adapter.desc))
-
+# Use comment out code above to find the correct Ethernet Adapter path
+adapter_name = "\\Device\\NPF_{XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}" 
 
 # Find EtherCAT slave device
 master = pysoem.Master()
 
-# once you find the correct adapter address open the master to get communication with the slave
-master.open("\\Device\\NPF_{ABF1453B-31C2-47F8-B7DC-10C3C0C7D7A5}")
+# Open the master to get communication & detect Slaves
+master.open(adapter_name)
 
-if master.config_init() > 0:
-   for device in master.slaves:
-      print(f'Found Device {device.name}')
+slave_count = master.config_init() 
+if slave_count > 0:
+    print(f"Found {slave_count} EtherCAT slaves:")
+    for device in master.slaves:
+        print(f'  - {device.name}')
 else:
-   print('no device found')
+    print('No devices found')
 
-
-master.state
-if master.config_init() > 0:
-    print("Found", master.config_init(), "slaves")
+master.close()
 
